@@ -2,7 +2,7 @@ import streamlit as st
 import csv
 
 def ler_estoque():
-    with open('estoque.csv', 'r') as arquivo_csv:
+    with open('estoque.csv', 'r', encoding='utf-8') as arquivo_csv:
         leitor_csv = csv.reader(arquivo_csv)
         estoque = list(leitor_csv)
     return estoque

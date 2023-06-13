@@ -53,7 +53,7 @@ def main():
         menu = []
 
         if st.session_state['permissions'] == 'admin':
-            menu = ['Visualizar Estoque', 'Adicionar Item', 'Remover Item', 'Controle de Item']
+            menu = ['Visualizar Estoque', 'Cadastrar Item', 'Remover Item', 'Controle de Item']
         elif st.session_state['permissions'] == 'operador':
             menu = ['Visualizar Estoque', 'Controle de Item']
 

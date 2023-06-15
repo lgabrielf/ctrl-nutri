@@ -2,7 +2,6 @@ import streamlit as st
 import csv
 from datetime import datetime, timedelta
 import subprocess
-from streamlit_modal import Modal
 
 st.set_page_config(page_title='MGJM - NutriControl', page_icon='logo_h.png')
 

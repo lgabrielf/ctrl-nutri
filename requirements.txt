@@ -1,2 +1,2 @@
-streamlit==1.22.0
-keyboard==0.13.5
+python-barcode==0.14.0
+streamlit==1.23.1

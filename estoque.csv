@@ -1,6 +1,4 @@
-Nome do Produto,Quantidade em Estoque,Unidade,Codigo de Barras,Consumo Mensal,Validade (dias)
-Arroz,51,,AR001,,
-Feijao,17,,FJ002,,
-Frango,93,,FR003,,
-Carne Bovina,65,,CB004,,
-Legumes,28,,LG005,,
+Nome do Produto,Quantidade,Unidade,Codigo de Barras,Estoque de Seguranca,Consumo Mensal,Dias Restantes
+Arroz,0,CAIXA,Arroz,0
+Feijao Preto,2,KG,Feijao
+Frango,0,KG,Frango,20,,

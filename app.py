@@ -1,6 +1,6 @@
 import streamlit as st
 import csv, barcode, os, zipfile
-from datetime import datetime, timedelta
+from datetime import date
 from barcode.writer import ImageWriter
 
 PASTA_IMAGENS = os.path.abspath("barcode_item")
@@ -40,6 +40,14 @@ def gerar_codigo_barras(nome_item):
 
     return nome_arquivo
 
+def calcular_consumo_mensal(estoque):
+    consumo_mensal = {}
+    for item in estoque[1:]:
+        codigo_barras = item[3]
+        quantidade = int(item[1]) if item[1] else 0
+        consumo_mensal[codigo_barras] = consumo_mensal.get(codigo_barras, 0) + quantidade
+    return consumo_mensal
+
 def ler_estoque():
     with open('estoque.csv', 'r', encoding='latin-1') as arquivo_csv:
         leitor_csv = csv.reader(arquivo_csv)
@@ -47,7 +55,7 @@ def ler_estoque():
     return estoque
 
 def gravar_estoque(estoque):
-    with open('estoque.csv', 'w', newline='') as arquivo_csv:
+    with open('estoque.csv', 'w', newline='', encoding='latin-1') as arquivo_csv:
         writer = csv.writer(arquivo_csv)
         writer.writerows(estoque)
 
@@ -100,29 +108,41 @@ def main():
                 'Cadastrar Novo Item', 
                 'Editar Item', 
                 'Ajuste de Inventário',
-                'Controle de Item',
                 'Entrada de Produtos', 
                 'Saída de Produtos'
             ]
         else:
-            menu_options = ['Visualizar Estoque', 'Controle de Item']
+            menu_options = ['Visualizar Estoque', 'Entrada de Produtos', 'Saída de Produtos']
 
         menu_selecionado = st.sidebar.radio('Menu', menu_options)
 
         # Página principal
         if menu_selecionado == 'Visualizar Estoque':
             st.header('Estoque Atual')
-            st.table(estoque)
+
+            # Calcular o consumo mensal
+            consumo_mensal = calcular_consumo_mensal(estoque)
+
+            # Adicionar o consumo mensal e dias restantes ao item de estoque
+            for item in estoque[1:]:
+                codigo_barras = item[3]
+                quantidade = int(item[1]) if item[1] else 0
+                estoque_seguranca = int(item[4]) if item[4] else 0
+                consumo = consumo_mensal.get(codigo_barras, 0)
+                dias_restantes = int(quantidade - estoque_seguranca) // consumo if consumo != 0 else 0
+                item.extend([consumo, dias_restantes])
+
+            # Criar uma cópia do estoque com as colunas adicionais
+            estoque_display = [["Nome do Produto", "Quantidade", "Unidade", "Código de Barras", "Estoque de Segurança", "Saída", "Consumo Mensal", "Dias Restantes"]] + estoque[1:]
+            
+            # Exibir a tabela do estoque
+            st.table(estoque_display)
 
         elif menu_selecionado == 'Cadastrar Novo Item' and st.session_state['permissions'] == 'admin':
             st.header('Cadastrar Novo Item ao Estoque')
             nome_produto = st.text_input('Nome do Produto')
             unidade = st.selectbox('Unidade do Item',('KG', 'DUZIA (PACOTE)', 'CAIXA', 'UNIDADE'))
             estoque_seguranca = st.number_input('Estoque de segurança do Item', min_value=0)
-            # validade = st.date_input('Validade do Item')
-
-            # data_atual = datetime.now().date()
-            # dias_restantes = (validade - data_atual).days
 
             if st.button('Cadastrar'):
                 if nome_produto.strip() == '':
@@ -159,9 +179,9 @@ def main():
             else:
                 st.warning('Item não encontrado.')
 
-        elif menu_selecionado == 'Controle de Item':
+        elif menu_selecionado == 'Ajuste de Inventário':
 
-            st.header('Controle de Item do Estoque')
+            st.header('Ajuste de Inventário do Estoque')
             codigo = st.text_input('Código de Barras do Item')
 
             quantidade = st.number_input('Quantidade', min_value=1, value=1)
@@ -191,6 +211,48 @@ def main():
                 else:
                     st.warning('Item não encontrado.')
 
+        elif menu_selecionado == 'Entrada de Produtos':
+            st.write('<style>div.entry-header { background-color: blue; padding: 10px; border-radius: 5px; color: white; font-size: 20px; font-weight: bold; }</style>', unsafe_allow_html=True)
+            st.write('<div class="entry-header">Entrada de Produtos</div>', unsafe_allow_html=True)
+            "---"
+            
+
+            codigo = st.text_input('Código de Barras do Item')
+            item = encontrar_produto_por_codigo(codigo, estoque)
+
+            if item is not None:
+                quantidade = 1
+
+                if st.button('Registrar entrada'):
+                    item[1] = str(int(item[1]) + 1)
+                    gravar_estoque(estoque)
+                    st.success("Entrada registrada com sucesso.")
+            else:
+                st.warning("Item não encontrado.")
+
+
+        elif menu_selecionado == 'Saída de Produtos':
+            st.write('<style>div.exit-header { background-color: red; padding: 10px; border-radius: 5px; color: white; font-size: 20px; font-weight: bold; }</style>', unsafe_allow_html=True)
+            st.write('<div class="exit-header">Saída de Produtos</div>', unsafe_allow_html=True)
+            "---"
+
+            codigo = st.text_input('Código de Barras do Item')
+            item = encontrar_produto_por_codigo(codigo, estoque)
+
+            if item is not None:
+                quantidade = 1
+
+                if st.button('Registrar saída'):
+                    quantidade = int(item[1])
+                    if quantidade > 0:
+                        item[1] = str(quantidade-1)
+                        item[5] = str(int(item[5]) + 1)
+                        gravar_estoque(estoque)
+                        st.success("Saída registrada com sucesso.")
+                    else:
+                        st.warning("Não há estoque disponível desse item.")
+            else:
+                st.warning("Item não encontrado.")
 
         st.sidebar.markdown("---")
 

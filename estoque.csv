@@ -1,4 +1,4 @@
-Nome do Produto,Quantidade,Unidade,Codigo de Barras,Estoque de Seguranca,Consumo Mensal,Dias Restantes
-Arroz,0,CAIXA,Arroz,0
-Feijao Preto,2,KG,Feijao
-Frango,0,KG,Frango,20,,
+Nome do Produto,Quantidade,Unidade,Codigo de Barras,Estoque de Seguranca,Saida,Consumo Mensal,Dias Restantes
+Arroz,55,CAIXA,Arroz,0,14
+Feijao Preto,2,KG,Feijao,0,0
+Frango,0,KG,Frango,20,0

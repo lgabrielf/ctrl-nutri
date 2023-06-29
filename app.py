@@ -45,7 +45,7 @@ def verificar_item_existente(nome, unidade, estoque):
 def gerar_codigo_barras(nome, unidade):
     nome_limpo = nome.translate(str.maketrans('', '', string.punctuation)).replace(' ', '').lower()
     unidade_limpa = unidade.translate(str.maketrans('', '', string.punctuation)).replace(' ', '').lower()
-    codigo = barcode.get('code128', nome_limpo + '_' + unidade_limpa, writer=ImageWriter())
+    codigo = barcode.get('code39', nome_limpo + '_' + unidade_limpa, writer=ImageWriter())
     barcode_folder_path = os.path.join(os.getcwd(), PASTA_IMAGENS)
     os.makedirs(barcode_folder_path, exist_ok=True)
     barcode_path = os.path.join(barcode_folder_path, nome_limpo + '_' + unidade_limpa)

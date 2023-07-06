@@ -1,6 +1,5 @@
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
 import csv, barcode, os, zipfile, string, ctypes
 from barcode.writer import ImageWriter
 from datetime import datetime, timedelta

@@ -1,7 +1,10 @@
 import streamlit as st
+import pandas as pd
+import matplotlib.pyplot as plt
 import csv, barcode, os, zipfile, string, ctypes
 from barcode.writer import ImageWriter
 from datetime import datetime, timedelta
+import altair as alt
 
 PASTA_IMAGENS = os.path.abspath("barcode_item")
 
@@ -35,6 +38,67 @@ def login_page():
 def popup_confirmacao():
     result = ctypes.windll.user32.MessageBoxW(0, "Deseja registrar a entrada?", "Confirmação", 1)
     return result == 1
+
+def visualizar_graficos(data):
+    # Carrega o arquivo CSV em um DataFrame
+    df = pd.read_csv(data, sep=',')
+
+    # Seleciona as colunas disponíveis para criação de gráficos
+    colunas = list(df.columns)
+    coluna_x = st.selectbox('Selecione a coluna para o eixo x do gráfico', colunas)
+    coluna_y = st.selectbox('Selecione a coluna para o eixo y do gráfico', colunas)
+    cor = st.color_picker('Selecione a cor do gráfico', '#1f77b4')
+
+    # Gráfico de linha
+    line_chart = alt.Chart(df).mark_line().encode(
+        x=alt.X(coluna_x, title=coluna_x),
+        y=alt.Y(coluna_y, title=coluna_y),
+        color=alt.ColorValue(cor)
+    ).properties(
+        width=600,
+        height=400,
+        title='Gráfico de Linha'
+    )
+
+    # Gráfico de barras
+    bar_chart = alt.Chart(df).mark_bar().encode(
+        x=alt.X(coluna_x, title=coluna_x),
+        y=alt.Y(coluna_y, title=coluna_y),
+        color=alt.ColorValue(cor)
+    ).properties(
+        width=600,
+        height=400,
+        title='Gráfico de Barras'
+    )
+
+    # Gráfico de colunas
+    column_chart = alt.Chart(df).mark_tick().encode(
+        x=alt.Y(coluna_x, title=coluna_x),
+        y=alt.X(coluna_y, title=coluna_y),
+        color=alt.ColorValue(cor)
+    ).properties(
+        width=600,
+        height=400,
+        title='Gráfico de Colunas'
+    )
+
+    # Gráfico de dispersão
+    scatter_chart = alt.Chart(df).mark_circle().encode(
+        x=alt.X(coluna_x, title=coluna_x),
+        y=alt.Y(coluna_y, title=coluna_y),
+        color=alt.ColorValue(cor)
+    ).properties(
+        width=600,
+        height=400,
+        title='Gráfico de Dispersão'
+    )
+
+    # Exibe os gráficos
+    st.altair_chart(line_chart, use_container_width=True)
+    st.altair_chart(bar_chart, use_container_width=True)
+    st.altair_chart(column_chart, use_container_width=True)
+    st.altair_chart(scatter_chart, use_container_width=True)
+
 
 def verificar_item_existente(nome, unidade, estoque):
     for item in estoque:
@@ -132,7 +196,8 @@ def main():
                 'Editar Item', 
                 'Ajuste de Inventário',
                 'Entrada de Produtos', 
-                'Saída de Produtos'
+                'Saída de Produtos',
+                'Visualizar Gráficos'  
             ]
         else:
             menu_options = ['Visualizar Estoque', 'Entrada de Produtos', 'Saída de Produtos']
@@ -285,6 +350,10 @@ def main():
                         st.warning("Não há estoque disponível desse item.")
             else:
                 st.warning("Item não encontrado.")
+
+        elif menu_selecionado == 'Visualizar Gráficos':
+        # Chamar a função de visualização de gráficos
+            visualizar_graficos('estoque.csv')
 
         st.sidebar.markdown("---")
 
